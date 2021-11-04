@@ -1,4 +1,4 @@
-Adding custom validations to Terraform [Terraform module](https://registry.terraform.io/modules/toluna-terraform/mongodb/aws/latest)
+Adding custom validations to Terraform [Terraform module](https://registry.terraform.io/modules/toluna-terraform/validations/custom/latest)
 
 ### Description
 This module supports adding custom validations not supported by out of the box Terraform validations before applying changes.
