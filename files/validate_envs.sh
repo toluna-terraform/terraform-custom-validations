@@ -121,18 +121,21 @@ validate_min_max_index() {
         re='^[0-9]+$'
         a_env=`sed -e 's/^"//' -e 's/"$//' <<<"$a_env"`
         if [[ $((a_env)) =~ ^[\-0-9]+$ ]] && (( a_env <= -1)); then
-          echo "env_index cannot be a negative number"
-          exit 1
+          is_error="env_index cannot be a negative number"
         elif [[ $((a_env)) =~ ^[\-0-9]+$ ]] && (( a_env > MAX_INDEX )); then
-          echo "env_index cannot be greater then $MAX_INDEX"
-          exit 1
+          is_error="env_index cannot be greater then $MAX_INDEX"
         elif ! [[ $a_env =~ $re ]] ; then
-          echo "env_index must be an integer"
-          exit 1
+          is_error="env_index must be an integer"
         fi
       done
     done <<< $jsonStrings
   done
+  if [[ !  -z "$is_error" ]]; then
+  echo "$is_error"
+      exit 1
+  else
+      exit 0
+  fi
 }
 
 $ACTION_TYPE
