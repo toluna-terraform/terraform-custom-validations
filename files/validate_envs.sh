@@ -50,12 +50,12 @@ for i in "${data_envs[@]}"
 do
 jsonStrings=$(cat "$FILE" | i="$i" jq -c '.[env.i]')
     while IFS= read -r document; do
-    allowed_envs=$(echo "$document" | jq -c '.allowed_envs')
-	allowed_envs=$(echo "$allowed_envs" | sed 's/\[//g' | sed 's/\]//g')
-    IFS=',' read -ra ADDR <<< "$allowed_envs"
-    for a_env in "${ADDR[@]}"; do
-        all_envs+=("$a_env app appears in more then one data environment, please make sure the same app environment does not populate more then one data environment")
-    done
+      allowed_envs=$(echo "$document" | jq -c '.allowed_envs')
+      allowed_envs=$(echo "$allowed_envs" | sed 's/\[//g' | sed 's/\]//g')
+      IFS=',' read -ra ADDR <<< "$allowed_envs"
+      for a_env in "${ADDR[@]}"; do
+          all_envs+=("$a_env app appears in more then one data environment, please make sure the same app environment does not populate more then one data environment")
+      done
     done <<< $jsonStrings
 done
 has_duplicate=$(printf '%s\n' "${all_envs[@]}"|awk '!($0 in seen){seen[$0];next} 1')
@@ -66,6 +66,62 @@ else
     exit 0
 fi
 
+}
+
+validate_duplicate_index() {
+  documentsJson=""  
+  jsonStrings=$(cat "$FILE" | jq -c '.')
+  while IFS= read -r document; do
+    app_env=$(echo "$document" | jq -r 'keys[] as $parent | "\($parent)"')
+  done <<< $jsonStrings
+  declare -a app_envs=($app_env)
+  declare -a all_envs=()
+  for i in "${app_envs[@]}"
+  do
+  jsonStrings=$(cat "$FILE" | i="$i" jq -c '.[env.i]')
+    while IFS= read -r document; do
+    env_index=$(echo "$document" | jq -c '.env_index')
+	  IFS=',' read -ra ADDR <<< "$env_index"
+      for a_env in "${ADDR[@]}"; do
+          all_envs+=("env_index $a_env appears under two environments, env_index must be unique per app environment")
+      done
+    done <<< $jsonStrings
+  done
+  has_duplicate=$(printf '%s\n' "${all_envs[@]}"|awk '!($0 in seen){seen[$0];next} 1')
+  if [[ !  -z "$has_duplicate" ]]; then
+  echo "$has_duplicate"
+      exit 1
+  else
+      exit 0
+  fi
+}
+
+validate_min_max_index() {
+  documentsJson=""  
+  jsonStrings=$(cat "$FILE" | jq -c '.')
+  while IFS= read -r document; do
+    app_env=$(echo "$document" | jq -r 'keys[] as $parent | "\($parent)"')
+  done <<< $jsonStrings
+  declare -a app_envs=($app_env)
+  declare -a all_envs=()
+  for i in "${app_envs[@]}"
+  do
+  jsonStrings=$(cat "$FILE" | i="$i" jq -c '.[env.i]')
+    while IFS= read -r document; do
+      env_index=$(echo "$document" | jq -c '.env_index')
+      IFS=',' read -ra ADDR <<< "$env_index"
+      for a_env in "${ADDR[@]}"; do
+          if [[ $a_env =~ ^[\-0-9]+$ ]] && (( a_env <= -1)); then
+            echo "Env index cannot be a negative number"
+            exit 1
+          elif ! [[ $a_env =~ ^[\-0-9]+$ ]] ; then
+            echo "Env index must be an integer"
+            exit 1
+          fi
+      done
+    done <<< $jsonStrings
+  done
+  fi
 }
 
 $ACTION_TYPE
