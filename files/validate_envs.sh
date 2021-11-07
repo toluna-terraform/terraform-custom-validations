@@ -9,6 +9,8 @@ usage() {
   cat <<EOM
     Usage:
     tf_validations.sh -a|--action validate_duplicate_env validationtype to run -f|--file fullpath to json file
+    tf_validations.sh -a|--action validate_duplicate_index validationtype to run -f|--file fullpath to json file
+    tf_validations.sh -a|--action validate_min_max_index to run -f|--file fullpath to json file -m|--max max index allowed 
 EOM
     exit 1
 }
@@ -23,6 +25,11 @@ while [[ $# -gt 0 ]]; do
       ;;
     -a|--action)
       ACTION_TYPE="$2"
+      shift # past argument
+      shift # past value
+      ;;
+    -m|--max)
+      MAX_INDEX=`sed -e 's/^"//' -e 's/"$//' <<<"$2"`
       shift # past argument
       shift # past value
       ;;
@@ -111,17 +118,21 @@ validate_min_max_index() {
       env_index=$(echo "$document" | jq -c '.env_index')
       IFS=',' read -ra ADDR <<< "$env_index"
       for a_env in "${ADDR[@]}"; do
-          if [[ $a_env =~ ^[\-0-9]+$ ]] && (( a_env <= -1)); then
-            echo "Env index cannot be a negative number"
-            exit 1
-          elif ! [[ $a_env =~ ^[\-0-9]+$ ]] ; then
-            echo "Env index must be an integer"
-            exit 1
-          fi
+        re='^[0-9]+$'
+        a_env=`sed -e 's/^"//' -e 's/"$//' <<<"$a_env"`
+        if [[ $((a_env)) =~ ^[\-0-9]+$ ]] && (( a_env <= -1)); then
+          echo "env_index cannot be a negative number"
+          exit 1
+        elif [[ $((a_env)) =~ ^[\-0-9]+$ ]] && (( a_env > MAX_INDEX )); then
+          echo "env_index cannot be greater then $MAX_INDEX"
+          exit 1
+        elif ! [[ $a_env =~ $re ]] ; then
+          echo "env_index must be an integer"
+          exit 1
+        fi
       done
     done <<< $jsonStrings
   done
-  fi
 }
 
 $ACTION_TYPE
