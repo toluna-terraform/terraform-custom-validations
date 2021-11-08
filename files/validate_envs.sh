@@ -67,12 +67,10 @@ jsonStrings=$(cat "$FILE" | i="$i" jq -c '.[env.i]')
 done
 has_duplicate=$(printf '%s\n' "${all_envs[@]}"|awk '!($0 in seen){seen[$0];next} 1')
 if [[ !  -z "$has_duplicate" ]]; then
-echo "$has_duplicate"
-    exit 1
+      jq -n  --arg has_duplicate "$has_duplicate" '{"valid":"false","message": $has_duplicate }'
 else
-    exit 0
+      jq -n '{"valid":"true"}'
 fi
-
 }
 
 validate_duplicate_index() {
@@ -96,10 +94,9 @@ validate_duplicate_index() {
   done
   has_duplicate=$(printf '%s\n' "${all_envs[@]}"|awk '!($0 in seen){seen[$0];next} 1')
   if [[ !  -z "$has_duplicate" ]]; then
-  echo "$has_duplicate"
-      exit 1
+      jq -n --arg has_duplicate "$has_duplicate" '{"valid":"false", "message": $has_duplicate }'
   else
-      exit 0
+      jq -n '{"valid":"true"}'
   fi
 }
 
@@ -131,10 +128,9 @@ validate_min_max_index() {
     done <<< $jsonStrings
   done
   if [[ !  -z "$is_error" ]]; then
-  echo "$is_error"
-      exit 1
+      jq -n --arg is_error "$is_error" '{"valid":"false", "message": $is_error }'
   else
-      exit 0
+      jq -n '{"valid":"true"}'
   fi
 }
 
