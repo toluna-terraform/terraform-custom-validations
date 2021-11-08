@@ -8,20 +8,20 @@ the arguments should include the -a|--action flag which calls the function (acti
 
 ## Usage
 
-The following example validates there are no duplicate environments under two different data layers:
 ```hcl
+#The following example validates there are no duplicate environments under two different data layers:
 module "validate" {
   source                = "toluna-terraform/validations"
   version               = "~>0.0.1" // Change to the required version.
   arguments = "-a validate_duplicate_env -f ${path.module}/some_json_file.json"
 }
-The following example validates you cannot enter a negative value as an index number or an index higher then maximum possible ciders in a json file:
+#The following example validates you cannot enter a negative value as an index number or an index higher then maximum possible ciders in a json file:
 module "validate" {
   source                = "toluna-terraform/validations"
   version               = "~>0.0.1" // Change to the required version.
   arguments = "-a validate_min_max_env -f ${path.module}/some_json_file.json -m 15"
 }
-The following example validates you cannot enter a duplicate index number in a json file:
+#The following example validates you cannot enter a duplicate index number in a json file:
 module "validate" {
   source                = "toluna-terraform/validations"
   version               = "~>0.0.1" // Change to the required version.
