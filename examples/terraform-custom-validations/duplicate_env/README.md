@@ -6,18 +6,6 @@ This module supports adding custom validations not supported by out of the box T
 ## Usage
 ```hcl
 module "validate" {
-  source                = "toluna-terraform/terraform-custom-validations/modules/duplicate_index"
-  version               = "~>0.0.1" // Change to the required version.
-  arguments = "-a validate_duplicate_env -f ${path.module}/some_json_file.json"
-}
-
-module "validate" {
-  source                = "toluna-terraform/terraform-custom-validations/modules/max_index"
-  version               = "~>0.0.1" // Change to the required version.
-  arguments = "-a validate_duplicate_env -f ${path.module}/some_json_file.json -m 15"
-}
-
-module "validate" {
   source                = "toluna-terraform/terraform-custom-validations/modules/duplicate_env"
   version               = "~>0.0.1" // Change to the required version.
   arguments = "-a validate_duplicate_env -f ${path.module}/some_json_file.json"

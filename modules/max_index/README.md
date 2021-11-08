@@ -6,17 +6,15 @@ This module supports adding custom validations not supported by out of the box T
 ## Usage
 ```hcl
 module "validate" {
-  source                = "toluna-terraform/terraform-aws-mongodb"
+  source                = "toluna-terraform/terraform-custom-validations/modules/max_index"
   version               = "~>0.0.1" // Change to the required version.
-  trigger = sha1(file("${path.module}/some_json_file.json"))
-  arguments = "-a validate_duplicate_env -f ${path.module}/some_json_file.json"
+  arguments = "-a validate_duplicate_env -f ${path.module}/some_json_file.json -m 15"
 }
 ```
 
 ## Toggles
 #### Backup, Restore and Initial DB flags:
 ```yaml
-trigger     = place here what would trigger the validation I.E. to trigger validation on changes to a file you can place sha1(file("some file"))
 arguments   = command line arguments to pass to the validation script I.E. -a funcation name to run -f some file to validate
 ```
 
@@ -29,7 +27,9 @@ arguments   = command line arguments to pass to the validation script I.E. -a fu
 
 ## Providers
 
-No providers
+| Name | Version |
+|------|---------|
+| <a name="assert"></a> [assert](https://github.com/bwoznicki/terraform-provider-assert) | >= 0.0.1 |
 
 
 ## Modules
@@ -40,10 +40,7 @@ No providers
 
 ## Resources
 
-| Name | Type |
-|------|------|
-| [null_resource](https://registry.terraform.io/providers/hashicorp/null/latest/docs/resources/resource) | resource |
-
+No Resources.
 
 ## Inputs
 
