@@ -10,6 +10,7 @@ usage() {
     Usage:
     tf_validations.sh -a|--action validate_duplicate_env validationtype to run -f|--file fullpath to json file
     tf_validations.sh -a|--action validate_duplicate_index validationtype to run -f|--file fullpath to json file
+    tf_validations.sh -a|--action validate_env_name validationtype to run -f|--file fullpath to json file -r|--regex  regexe pattern list
     tf_validations.sh -a|--action validate_min_max_index to run -f|--file fullpath to json file -m|--max max index allowed 
 EOM
     exit 1
@@ -30,6 +31,11 @@ while [[ $# -gt 0 ]]; do
       ;;
     -m|--max)
       MAX_INDEX=`sed -e 's/^"//' -e 's/"$//' <<<"$2"`
+      shift # past argument
+      shift # past value
+      ;;
+    -r|--regex)
+      IFS=', ' read -r -a REGEX_PATTERN <<< "$2"
       shift # past argument
       shift # past value
       ;;
@@ -129,6 +135,30 @@ validate_min_max_index() {
   done
   if [[ !  -z "$is_error" ]]; then
       jq -n --arg is_error "$is_error" '{"valid":"false", "message": $is_error }'
+  else
+      jq -n '{"valid":"true"}'
+  fi
+}
+
+validate_env_name() {
+  documentsJson=""  
+  jsonStrings=$(cat "$FILE" | jq -c '.')
+  while IFS= read -r document; do
+    app_env=$(echo "$document" | jq -r 'keys[] as $parent | "\($parent)"')
+  done <<< $jsonStrings
+  declare -a app_envs=($app_env)
+  declare -a all_envs=()
+  for i in "${app_envs[@]}"
+  do
+    for x in "${REGEX_PATTERN[@]}"
+    do
+    if [[ "$i" == *"$x"* ]]; then
+    not_valid+="$i cannot contain $x"
+    fi
+    done
+  done
+  if [[ !  -z "$not_valid" ]]; then
+      jq -n --arg not_valid "$not_valid" '{"valid":"false", "message": $not_valid }'
   else
       jq -n '{"valid":"true"}'
   fi
