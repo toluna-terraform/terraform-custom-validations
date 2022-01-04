@@ -153,7 +153,7 @@ validate_env_name() {
     for x in "${REGEX_PATTERN[@]}"
     do
     if [[ "$i" == *"$x"* ]]; then
-    not_valid+="$i cannot contain $x"
+      not_valid="$i cannot contain any of the following expressions: ${REGEX_PATTERN[@]}"
     fi
     done
   done
