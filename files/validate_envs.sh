@@ -8,10 +8,10 @@ unset FILE
 usage() {
   cat <<EOM
     Usage:
-    tf_validations.sh -a|--action validate_duplicate_env validationtype to run -f|--file fullpath to json file
-    tf_validations.sh -a|--action validate_duplicate_index validationtype to run -f|--file fullpath to json file
-    tf_validations.sh -a|--action validate_env_name validationtype to run -f|--file fullpath to json file -r|--regex  regexe pattern list
-    tf_validations.sh -a|--action validate_min_max_index to run -f|--file fullpath to json file -m|--max max index allowed 
+    tf_validations.sh -a|--action validate_duplicate_env validationtype to run -f|--file fullpath to json file or -j|--json for json object
+    tf_validations.sh -a|--action validate_duplicate_index validationtype to run -f|--file fullpath to json file or -j|--json for json object
+    tf_validations.sh -a|--action validate_env_name validationtype to run -f|--file fullpath to json file or -j|--json for json object -r|--regex  regexe pattern list
+    tf_validations.sh -a|--action validate_min_max_index to run -f|--file fullpath to json file or -j|--json for json object -m|--max max index allowed 
 EOM
     exit 1
 }
@@ -21,6 +21,11 @@ while [[ $# -gt 0 ]]; do
   case $key in
     -f|--file)
       FILE="$2"
+      shift # past argument
+      shift # past value
+      ;;
+    -j|--json)
+      JSON="$2"
       shift # past argument
       shift # past value
       ;;
@@ -50,13 +55,16 @@ while [[ $# -gt 0 ]]; do
   esac
 done
 : ${ACTION_TYPE:?Missing -a|--action type -h for help}
+if [ -z $FILE ]; then 
+  echo "$JSON" > ./environment.json
+  export FILE="./environment.json"
+fi
 validate_duplicate_env() {
-documentsJson=""  
-    jsonStrings=$(cat "$FILE" | jq -c '.')
-    while IFS= read -r document; do
-
+documentsJson=""
+jsonStrings=$(cat "$FILE" | jq -c '.')  
+while IFS= read -r document; do
 	data_env=$(echo "$document" | jq -r 'keys[] as $parent | "\($parent)"')
-   done <<< $jsonStrings
+done <<< $jsonStrings
 declare -a data_envs=($data_env)
 declare -a all_envs=()
 for i in "${data_envs[@]}"
@@ -102,6 +110,7 @@ validate_duplicate_index() {
   if [[ !  -z "$has_duplicate" ]]; then
       jq -n --arg has_duplicate "$has_duplicate" '{"valid":"false", "message": $has_duplicate }'
   else
+
       jq -n '{"valid":"true"}'
   fi
 }
@@ -165,3 +174,4 @@ validate_env_name() {
 }
 
 $ACTION_TYPE
+
