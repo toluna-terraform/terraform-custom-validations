@@ -55,13 +55,13 @@ while [[ $# -gt 0 ]]; do
   esac
 done
 : ${ACTION_TYPE:?Missing -a|--action type -h for help}
-if [ -z $FILE ]; then 
-  echo "$JSON" > ./environment.json
-  export FILE="./environment.json"
-fi
 validate_duplicate_env() {
 documentsJson=""
-jsonStrings=$(cat "$FILE" | jq -c '.')  
+if [ -z $JSON ]; then 
+  jsonStrings=$(cat "$FILE" | jq -c '.')
+else 
+  jsonStrings=$( echo "$JSON" | jq -c '.') 
+fi
 while IFS= read -r document; do
 	data_env=$(echo "$document" | jq -r 'keys[] as $parent | "\($parent)"')
 done <<< $jsonStrings
@@ -69,15 +69,19 @@ declare -a data_envs=($data_env)
 declare -a all_envs=()
 for i in "${data_envs[@]}"
 do
-jsonStrings=$(cat "$FILE" | i="$i" jq -c '.[env.i]')
-    while IFS= read -r document; do
-      allowed_envs=$(echo "$document" | jq -c '.allowed_envs')
-      allowed_envs=$(echo "$allowed_envs" | sed 's/\[//g' | sed 's/\]//g')
-      IFS=',' read -ra ADDR <<< "$allowed_envs"
-      for a_env in "${ADDR[@]}"; do
-          all_envs+=("$a_env app appears in more then one data environment, please make sure the same app environment does not populate more then one data environment")
-      done
-    done <<< $jsonStrings
+if [ -z $JSON ]; then 
+  jsonStrings=$(cat "$FILE" | i="$i" jq -c '.[env.i]')
+else 
+  jsonStrings=$( echo "$JSON" | i="$i" jq -c '.[env.i]')   
+fi
+  while IFS= read -r document; do
+    allowed_envs=$(echo "$document" | jq -c '.allowed_envs')
+    allowed_envs=$(echo "$allowed_envs" | sed 's/\[//g' | sed 's/\]//g')
+    IFS=',' read -ra ADDR <<< "$allowed_envs"
+    for a_env in "${ADDR[@]}"; do
+      all_envs+=("$a_env app appears in more then one data environment, please make sure the same app environment does not populate more then one data environment")
+    done
+  done <<< $jsonStrings
 done
 has_duplicate=$(printf '%s\n' "${all_envs[@]}"|awk '!($0 in seen){seen[$0];next} 1')
 if [[ !  -z "$has_duplicate" ]]; then
@@ -89,7 +93,11 @@ fi
 
 validate_duplicate_index() {
   documentsJson=""  
-  jsonStrings=$(cat "$FILE" | jq -c '.')
+  if [ -z $JSON ]; then 
+    jsonStrings=$(cat "$FILE" | jq -c '.')
+  else 
+    jsonStrings=$( echo "$JSON" | jq -c '.') 
+  fi
   while IFS= read -r document; do
     app_env=$(echo "$document" | jq -r 'keys[] as $parent | "\($parent)"')
   done <<< $jsonStrings
@@ -97,7 +105,11 @@ validate_duplicate_index() {
   declare -a all_envs=()
   for i in "${app_envs[@]}"
   do
-  jsonStrings=$(cat "$FILE" | i="$i" jq -c '.[env.i]')
+  if [ -z $JSON ]; then 
+    jsonStrings=$(cat "$FILE" | i="$i" jq -c '.[env.i]')
+  else 
+    jsonStrings=$( echo "$JSON" | i="$i" jq -c '.[env.i]')   
+  fi
     while IFS= read -r document; do
     env_index=$(echo "$document" | jq -c '.env_index')
 	  IFS=',' read -ra ADDR <<< "$env_index"
@@ -117,7 +129,11 @@ validate_duplicate_index() {
 
 validate_min_max_index() {
   documentsJson=""  
-  jsonStrings=$(cat "$FILE" | jq -c '.')
+  if [ -z $JSON ]; then 
+    jsonStrings=$(cat "$FILE" | jq -c '.')
+  else 
+    jsonStrings=$( echo "$JSON" | jq -c '.') 
+  fi
   while IFS= read -r document; do
     app_env=$(echo "$document" | jq -r 'keys[] as $parent | "\($parent)"')
   done <<< $jsonStrings
@@ -125,7 +141,11 @@ validate_min_max_index() {
   declare -a all_envs=()
   for i in "${app_envs[@]}"
   do
-  jsonStrings=$(cat "$FILE" | i="$i" jq -c '.[env.i]')
+  if [ -z $JSON ]; then 
+    jsonStrings=$(cat "$FILE" | i="$i" jq -c '.[env.i]')
+  else 
+    jsonStrings=$( echo "$JSON" | i="$i" jq -c '.[env.i]')   
+  fi
     while IFS= read -r document; do
       env_index=$(echo "$document" | jq -c '.env_index')
       IFS=',' read -ra ADDR <<< "$env_index"
@@ -151,7 +171,11 @@ validate_min_max_index() {
 
 validate_env_name() {
   documentsJson=""  
-  jsonStrings=$(cat "$FILE" | jq -c '.')
+  if [ -z $JSON ]; then 
+    jsonStrings=$(cat "$FILE" | jq -c '.')
+  else 
+    jsonStrings=$( echo "$JSON" | jq -c '.') 
+  fi
   while IFS= read -r document; do
     app_env=$(echo "$document" | jq -r 'keys[] as $parent | "\($parent)"')
   done <<< $jsonStrings
