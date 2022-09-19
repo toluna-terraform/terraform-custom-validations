@@ -1,4 +1,4 @@
-module github.com/toluna-terraform/terraform-provider-toluna
+module github.com/toluna-terraform/terraform-provider-toluna-custom
 
 go 1.18
 
